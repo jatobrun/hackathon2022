@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useRef } from "react";
+import { useDispatch } from "react-redux";
 import { actions } from "@liveblocks/redux";
+
+import CodeView from "./components/CodeView/CodeView";
 
 import './App.css';
 import {Button, Modal, Box, Typography, TextField} from '@mui/material';
@@ -17,34 +19,26 @@ const style = {
   p: 4,
 };
 
-function WhoIsHere() {
-  const othersUsersCount = useSelector(
-    (state) => state.liveblocks.others.length
-  );
-
-  return (
-    <div className="who_is_here">
-      There are {othersUsersCount} other users online
-    </div>
-  );
-}
-
 function App() {
+  const valueRef = useRef('') 
   const dispatch = useDispatch();
+
   const [openCreateRoomModal, setOpenCreateRoomModal] = React.useState(false);
   const [openEnterRoomModal, setOpenEnterRoomModal] = React.useState(false);
+
+  const [hasRender, setRender] = React.useState(false);
 
   const handleOpenCreateRoomModal = () => setOpenCreateRoomModal(true);
   const handleCloseCreateRoomModal = () => setOpenCreateRoomModal(false);
   const handleOpenEnterRoomModal = () => setOpenEnterRoomModal(true);
   const handleCloseEnterRoomModal = () => setOpenEnterRoomModal(false);
-  const valueRef = useRef('') 
-  const sendValue = () => {
-    return console.log(valueRef.current.value) 
-    
-}
-  const handleStartRoom = (code) => {
-    console.log(code);
+
+  const setRenderComponent = () => { 
+    setOpenEnterRoomModal(false);
+    setRender(true);
+  };
+        
+  const handleStartRoom = (code) => {    
     dispatch(
       actions.enterRoom(code, {
         todos: [],
@@ -52,6 +46,7 @@ function App() {
       setOpenCreateRoomModal(false)
       setOpenEnterRoomModal(false)
   };
+
   let roomCode = '';
   const generateRandomCode = () => {
     var firstPart = (Math.random() * 46656) | 0;
@@ -61,55 +56,55 @@ function App() {
     roomCode = firstPart + secondPart
     return roomCode;
   };
-  // useEffect(() => {
-  //   return (
-  //     <div className="container">
-  //       <WhoIsHere />
-  //     </div>
-  //   );
-  // })
+
   return (
     <div>
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-          Main Page
-      </Typography>
-      <Button onClick={handleOpenCreateRoomModal}>Create Room</Button>
-      <Modal
-        open={openCreateRoomModal}
-        onClose={handleCloseCreateRoomModal}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        
-        <Box sx={style}>
+      { !hasRender &&       
+        <div>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Create room
+              Main Page
           </Typography>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            {generateRandomCode()}
-          </Typography>
-          <Button onClick={() => handleStartRoom(roomCode)}>START</Button>
-        </Box>
-      </Modal>
+          <Button onClick={handleOpenCreateRoomModal}>Create Room</Button>
+          <Modal
+            open={openCreateRoomModal}
+            onClose={handleCloseCreateRoomModal}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            
+            <Box sx={style}>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                Create room
+              </Typography>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                {generateRandomCode()}
+              </Typography>
+              <Button onClick={() => handleStartRoom(roomCode)}>START</Button>
+            </Box>
+          </Modal>
 
-      <Button onClick={handleOpenEnterRoomModal}>Enter Room</Button>
-      <Modal
-        open={openEnterRoomModal}
-        onClose={handleCloseEnterRoomModal}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Get Room Code
-          </Typography>
-          <div>
-            <TextField id="filled-basic" label="Enter Room Code" variant="filled" inputRef={valueRef} />
-          </div>
-          <Button onClick={() => handleStartRoom(valueRef.current.value)}>JOIN</Button>
-        </Box>
-      </Modal>
+          <Button onClick={handleOpenEnterRoomModal}>Enter Room</Button>
+          <Modal
+            open={openEnterRoomModal}
+            onClose={handleCloseEnterRoomModal}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            
+            <Box sx={style}>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                Get Room Code
+              </Typography>
+              <div>
+                <TextField id="filled-basic" label="Enter Room Code" variant="filled" inputRef={valueRef} />
+              </div>
+              <Button onClick={() => setRenderComponent()}>JOIN</Button>          
+            </Box>
+          </Modal>
+        </div>
+      }
+
+      {hasRender && <CodeView code={valueRef.current.value}/>}
     </div>
   );
 }
