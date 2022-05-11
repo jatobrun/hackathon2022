@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { useDispatch } from "react-redux";
+import React, { useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { actions } from "@liveblocks/redux";
 
 import CodeView from "./components/CodeView/CodeView";
@@ -19,35 +19,39 @@ const style = {
   p: 4,
 };
 
+let roomCode = '';
+
 function App() {
   const valueRef = useRef('') 
   const dispatch = useDispatch();
 
   const [openCreateRoomModal, setOpenCreateRoomModal] = React.useState(false);
   const [openEnterRoomModal, setOpenEnterRoomModal] = React.useState(false);
+  const [btnDisabled, setBtnDisabled] = React.useState(true)
 
   const [hasRender, setRender] = React.useState(false);
 
   const handleOpenCreateRoomModal = () => setOpenCreateRoomModal(true);
   const handleCloseCreateRoomModal = () => setOpenCreateRoomModal(false);
   const handleOpenEnterRoomModal = () => setOpenEnterRoomModal(true);
-  const handleCloseEnterRoomModal = () => setOpenEnterRoomModal(false);
-
-  const setRenderComponent = () => { 
+  const handleCloseEnterRoomModal = () =>{
     setOpenEnterRoomModal(false);
-    setRender(true);
-  };
-        
+    setBtnDisabled(true);
+  } 
+
+  
+
   const handleStartRoom = (code) => {    
+    console.log(code)
     dispatch(
       actions.enterRoom(code, {
         todos: [],
       }));
-      setOpenCreateRoomModal(false)
-      setOpenEnterRoomModal(false)
+      // setOpenCreateRoomModal(false)
+      // setOpenEnterRoomModal(false)
+      setRender(true)
   };
 
-  let roomCode = '';
   const generateRandomCode = () => {
     var firstPart = (Math.random() * 46656) | 0;
     var secondPart = (Math.random() * 46656) | 0;
@@ -57,6 +61,20 @@ function App() {
     return roomCode;
   };
 
+  const handleLeaveRoom = () => {
+    const code = btnDisabled ? roomCode : valueRef.current.value
+    dispatch(
+      actions.leaveRoom(code));
+  }
+  
+  const othersUsersCount = useSelector(
+    (state) => {
+      console.log(state.liveblocks.others);
+      return state.liveblocks.others.length;
+    }
+  );
+  useEffect(() => {}, [dispatch]);
+  
   return (
     <div>
       { !hasRender &&       
@@ -96,15 +114,20 @@ function App() {
                 Get Room Code
               </Typography>
               <div>
-                <TextField id="filled-basic" label="Enter Room Code" variant="filled" inputRef={valueRef} />
+                <TextField onChange={(text) => setBtnDisabled(!(text.target.value.length === 6))} id="filled-basic" label="Enter Room Code" variant="filled" inputRef={valueRef} />
               </div>
-              <Button onClick={() => setRenderComponent()}>JOIN</Button>          
+              <Button disabled={btnDisabled} onClick={() => handleStartRoom(valueRef.current.value)}>JOIN</Button>          
             </Box>
           </Modal>
         </div>
       }
+      {hasRender && 
+        <div className="who_is_here">
+          There are {othersUsersCount} other users online
 
-      {hasRender && <CodeView code={valueRef.current.value}/>}
+          <p>{roomCode}</p>
+          <Button onClick={handleLeaveRoom()}>Leave Room</Button>
+        </div> }
     </div>
   );
 }

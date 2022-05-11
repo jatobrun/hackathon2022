@@ -1,28 +1,32 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { actions } from "@liveblocks/redux";
 
-class CodeView extends React.Component {
- 
- render() {
+import {Button} from '@mui/material';
+
+
+function CodeView(props) {
+  console.log(props)
+  
+  const dispatch = useDispatch();
+  const handleLeaveRoom = () => {
+    console.log(props.code)
+    dispatch(
+      actions.leaveRoom(props.code));
+  }
+  
+  const othersUsersCount = useSelector(
+    (state) => {
+      console.log(state.liveblocks.others);
+      return state.liveblocks.others.length;
+    }
+  );
   return (
-    <div>
-      CodeView Component
-      <div>{this.props.code}</div>
+    <div className="who_is_here">
+      There are {othersUsersCount} other users online
+      <Button onClick={handleLeaveRoom()}>Leave Room</Button>
     </div>
    );
-  }
- }
-
-/*const CodeView = () => (
-  <div>
-    CodeView Component
-  </div>
-);*/
-
-/*CodeView.propTypes = {
-  code: PropTypes.string
-};*/
-
-CodeView.defaultProps = {};
+ };
 
 export default CodeView;
