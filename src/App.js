@@ -2,8 +2,6 @@ import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { actions } from "@liveblocks/redux";
 
-import CodeView from "./components/CodeView/CodeView";
-
 import './App.css';
 import {Button, Modal, Box, Typography, TextField} from '@mui/material';
 
@@ -38,18 +36,17 @@ function App() {
     setOpenEnterRoomModal(false);
     setBtnDisabled(true);
   } 
-
   
-
   const handleStartRoom = (code) => {    
-    console.log(code)
+    roomCode = code; // This is because the roomCode could be enter in the imput or just generate for generateRandomCode()
     dispatch(
       actions.enterRoom(code, {
         todos: [],
-      }));
-      // setOpenCreateRoomModal(false)
-      // setOpenEnterRoomModal(false)
-      setRender(true)
+    }));
+    
+    setOpenCreateRoomModal(false);
+    setOpenEnterRoomModal(false);
+    setRender(true);
   };
 
   const generateRandomCode = () => {
@@ -62,9 +59,11 @@ function App() {
   };
 
   const handleLeaveRoom = () => {
-    const code = btnDisabled ? roomCode : valueRef.current.value
     dispatch(
-      actions.leaveRoom(code));
+      actions.leaveRoom(roomCode)
+    );
+    setRender(false);
+    roomCode = '';
   }
   
   const othersUsersCount = useSelector(
@@ -126,7 +125,7 @@ function App() {
           There are {othersUsersCount} other users online
 
           <p>{roomCode}</p>
-          <Button onClick={handleLeaveRoom()}>Leave Room</Button>
+          <Button onClick={() => handleLeaveRoom()}>Leave Room</Button>
         </div> }
     </div>
   );
