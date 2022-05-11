@@ -2,8 +2,10 @@ import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { actions } from "@liveblocks/redux";
 
+import { setDraft, addTodo, deleteTodo } from "./config/store";
+
 import './App.css';
-import {Button, Modal, Box, Typography, TextField} from '@mui/material';
+import { Button, Modal, Box, Typography, TextField } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -19,8 +21,22 @@ const style = {
 
 let roomCode = '';
 
+function SomeoneIsTyping() {
+  const someoneIsTyping = useSelector((state) =>
+    state.liveblocks.others.some((user) => user.presence?.isTyping)
+  );
+
+  return someoneIsTyping ? (
+    <div className="someone_is_typing">Someone is typing...</div>
+  ) : null;
+}
+
 function App() {
-  const valueRef = useRef('') 
+  const valueRef = useRef('');
+
+  const todos = useSelector((state) => state.todos);
+  const draft = useSelector((state) => state.draft);
+
   const dispatch = useDispatch();
 
   const [openCreateRoomModal, setOpenCreateRoomModal] = React.useState(false);
@@ -121,11 +137,43 @@ function App() {
         </div>
       }
       {hasRender && 
-        <div className="who_is_here">
-          There are {othersUsersCount} other users online
+        <div className="container">
+           <div className="who_is_here">
+              There are {othersUsersCount} other users online
+            </div>
 
           <p>{roomCode}</p>
           <Button onClick={() => handleLeaveRoom()}>Leave Room</Button>
+
+          <div>
+            <TextField 
+              variant="filled"
+              className="input"
+              type="text"
+              placeholder="What needs to be done?"
+              value={draft}
+              onChange={(e) => dispatch(setDraft(e.target.value))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  dispatch(addTodo());
+                }
+              }}
+            />
+            <SomeoneIsTyping />
+            {todos.map((todo, index) => {
+              return (
+                <div className="todo_container" key={index}>
+                  <label className="todo">{todo.text}</label>
+                  <button
+                    className="delete_button"
+                    onClick={() => dispatch(deleteTodo(index))}
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div> }
     </div>
   );
