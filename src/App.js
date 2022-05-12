@@ -84,7 +84,6 @@ function App() {
   
   const othersUsersCount = useSelector(
     (state) => {
-      console.log(state.liveblocks.others);
       return state.liveblocks.others.length;
     }
   );
